@@ -18,11 +18,10 @@ import 'package:matrix/matrix.dart';
 /// Shows nothing and returns the current client directly if there is
 /// only a single account.
 Future<Client?> showClientPickerDialog(BuildContext context) async {
-  final matrix = Matrix.of(context);
-  final clients = matrix.widget.clients.where((client) => client.isLogged());
+  final clients = Matrix.of(context).widget.clients;
 
   if (clients.length < 2) {
-    return clients.isEmpty ? null : matrix.client;
+    return clients.isEmpty ? null : clients.first;
   }
 
   final profiles = (await showFutureLoadingDialog(
@@ -34,7 +33,10 @@ Future<Client?> showClientPickerDialog(BuildContext context) async {
         } catch (_) {
           return Profile(
             userId: client.userID ?? '',
-            displayName: client.userID?.localpart ?? client.userID ?? '',
+            displayName:
+                client.userID?.localpart ??
+                client.userID ??
+                L10n.of(context).user,
             avatarUrl: null,
           );
         }
@@ -55,14 +57,16 @@ Future<Client?> showClientPickerDialog(BuildContext context) async {
               profiles[i].displayName ??
               client.userID?.localpart ??
               client.userID ??
-              '';
+              L10n.of(context).user;
           return AdaptiveModalAction(
             label: name,
             value: client,
             isDefaultAction: i == 0,
-            icon: profiles[i].avatarUrl != null
-                ? Avatar(mxContent: profiles[i].avatarUrl, name: name, size: 40)
-                : null,
+            icon: Avatar(
+              mxContent: profiles[i].avatarUrl,
+              name: name,
+              size: 40,
+            ),
           );
         }(),
     ],
